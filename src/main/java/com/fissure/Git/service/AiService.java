@@ -2,7 +2,7 @@ package com.fissure.Git.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -14,24 +14,32 @@ import java.net.URL;
 
 @Component
 public class AiService {
+
+    @Value("${OLLAMA_BASE_URL}")
+    private String ollamaBaseUrl;
+
+    @Value("${OLLAMA_MODEL:llama3}")
+    private String model;
+
     public String generation(String prompt) {
 
         try {
 
-            String url = "http://localhost:11434/api/generate";
+            String url = ollamaBaseUrl + "/api/generate";
 
             String escapedPrompt = prompt
                     .replace("\\", "\\\\")
                     .replace("\"", "\\\"")
                     .replace("\n", "\\n")
                     .replace("\r", "");
+
             String body = """
             {
-              "model": "llama3",
+              "model": "%s",
               "prompt": "%s",
               "stream": false
             }
-            """.formatted(escapedPrompt);
+            """.formatted(model, escapedPrompt);
 
             HttpURLConnection conn =
                     (HttpURLConnection) new URL(url).openConnection();
@@ -55,8 +63,8 @@ public class AiService {
             String response =
                     br.lines().reduce("", (a, b) -> a + b);
 
-            System.out.println("FULL OLLAMA RESPONSE:");
-            System.out.println(response);
+//            System.out.println("FULL OLLAMA RESPONSE:");
+//            System.out.println(response);
 
             ObjectMapper mapper = new ObjectMapper();
 
