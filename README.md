@@ -142,6 +142,7 @@ Beyond point-in-time analysis, the prophet tracks how conflict probability has g
 Commit messages are unreliable. "fix", "update", "changes" — these tell you nothing. The intent predictor analyzes the actual diff, the files changed, the author's recent commit history, and the timestamp to classify what a commit actually did and why.
 
 Output per commit:
+
 - Intent classification: BUGFIX / FEATURE / REFACTOR / PERFORMANCE / SECURITY / CLEANUP / HOTFIX
 - Confidence score
 - One-sentence reasoning
@@ -156,76 +157,92 @@ Batch analysis runs intent prediction across the last N commits on a branch, rev
 
 ### Repository
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/git/init` | Initialize repository |
-| GET | `/git/status` | Current branch, staged files, HEAD SHA |
+
+| Method | Endpoint      | Description                            |
+| ------ | ------------- | -------------------------------------- |
+| POST   | `/git/init`   | Initialize repository                  |
+| GET    | `/git/status` | Current branch, staged files, HEAD SHA |
+
 
 ### Files
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/git/add?path={file}` | Stage file (body = content) |
-| POST | `/git/commit?message={msg}&author={author}` | Commit staged files |
+
+| Method | Endpoint                                    | Description                 |
+| ------ | ------------------------------------------- | --------------------------- |
+| POST   | `/git/add?path={file}`                      | Stage file (body = content) |
+| POST   | `/git/commit?message={msg}&author={author}` | Commit staged files         |
+
 
 ### History
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/git/log` | Commit history of current branch |
-| GET | `/git/log/graph` | All commits across all branches as graph |
+
+| Method | Endpoint         | Description                              |
+| ------ | ---------------- | ---------------------------------------- |
+| GET    | `/git/log`       | Commit history of current branch         |
+| GET    | `/git/log/graph` | All commits across all branches as graph |
+
 
 ### Branching
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/git/branch?name={name}` | Create branch at current HEAD |
-| GET | `/git/branch` | List all branches |
-| DELETE | `/git/branch?name={name}` | Delete branch |
-| POST | `/git/checkout?target={branch}` | Switch branch or checkout SHA |
+
+| Method | Endpoint                        | Description                   |
+| ------ | ------------------------------- | ----------------------------- |
+| POST   | `/git/branch?name={name}`       | Create branch at current HEAD |
+| GET    | `/git/branch`                   | List all branches             |
+| DELETE | `/git/branch?name={name}`       | Delete branch                 |
+| POST   | `/git/checkout?target={branch}` | Switch branch or checkout SHA |
+
 
 ### Diff
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/git/diff?sha1={s1}&sha2={s2}&file={f}` | Myers diff between two commits |
-| GET | `/git/diff/working?file={f}&newContent={c}` | Diff working content vs HEAD |
+
+| Method | Endpoint                                    | Description                    |
+| ------ | ------------------------------------------- | ------------------------------ |
+| GET    | `/git/diff?sha1={s1}&sha2={s2}&file={f}`    | Myers diff between two commits |
+| GET    | `/git/diff/working?file={f}&newContent={c}` | Diff working content vs HEAD   |
+
 
 ### Merge
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/git/merge?branch={name}` | Merge branch into current |
-| GET | `/git/merge/preview?branch={name}` | Preview conflicts without merging |
+
+| Method | Endpoint                           | Description                       |
+| ------ | ---------------------------------- | --------------------------------- |
+| POST   | `/git/merge?branch={name}`         | Merge branch into current         |
+| GET    | `/git/merge/preview?branch={name}` | Preview conflicts without merging |
+
 
 ### AI
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/git/ai/diff?sha1={s1}&sha2={s2}&file={f}` | Semantic diff with intent analysis |
-| GET | `/git/ai/intent?sha={sha}` | Commit intent prediction |
-| GET | `/git/ai/intent/batch?branch={b}&limit={n}` | Batch intent across N commits |
-| GET | `/git/ai/prophet?branch1={b1}&branch2={b2}` | Full conflict prophecy |
-| GET | `/git/ai/prophet/trajectory?branch1={b1}&branch2={b2}` | Conflict probability over time |
-| GET | `/git/ai/prophet/quick?branch1={b1}&branch2={b2}` | Fast conflict probability score |
+
+| Method | Endpoint                                               | Description                        |
+| ------ | ------------------------------------------------------ | ---------------------------------- |
+| GET    | `/git/ai/diff?sha1={s1}&sha2={s2}&file={f}`            | Semantic diff with intent analysis |
+| GET    | `/git/ai/intent?sha={sha}`                             | Commit intent prediction           |
+| GET    | `/git/ai/intent/batch?branch={b}&limit={n}`            | Batch intent across N commits      |
+| GET    | `/git/ai/prophet?branch1={b1}&branch2={b2}`            | Full conflict prophecy             |
+| GET    | `/git/ai/prophet/trajectory?branch1={b1}&branch2={b2}` | Conflict probability over time     |
+| GET    | `/git/ai/prophet/quick?branch1={b1}&branch2={b2}`      | Fast conflict probability score    |
+
 
 ---
 
 ## Data Structures and Algorithms
 
-| Algorithm / Structure | Used In |
-|---|---|
-| SHA-256 hashing | Object store — every object identified by content hash |
-| HashMap | Object store lookup, ref manager, staging index |
-| Directed Acyclic Graph | Commit history with multi-parent support |
-| Depth-first traversal | `getHistory()`, ancestor collection |
-| HashSet ancestor lookup | `findLCA()` — O(n) LCA on DAG |
-| Myers diff — O(ND) | Line-level diff between any two file versions |
-| Snapshot backtracking | Reconstructing edit script from Myers forward pass |
-| 3-way merge | Applying two change sets to a common base |
-| Set intersection | Finding files touched by both branches |
-| Frequency map | Ranking collision risk by touch count |
-| Time series over commits | Conflict trajectory analysis |
+
+| Algorithm / Structure    | Used In                                                |
+| ------------------------ | ------------------------------------------------------ |
+| SHA-256 hashing          | Object store — every object identified by content hash |
+| HashMap                  | Object store lookup, ref manager, staging index        |
+| Directed Acyclic Graph   | Commit history with multi-parent support               |
+| Depth-first traversal    | `getHistory()`, ancestor collection                    |
+| HashSet ancestor lookup  | `findLCA()` — O(n) LCA on DAG                          |
+| Myers diff — O(ND)       | Line-level diff between any two file versions          |
+| Snapshot backtracking    | Reconstructing edit script from Myers forward pass     |
+| 3-way merge              | Applying two change sets to a common base              |
+| Set intersection         | Finding files touched by both branches                 |
+| Frequency map            | Ranking collision risk by touch count                  |
+| Time series over commits | Conflict trajectory analysis                           |
+
 
 ---
 
@@ -357,7 +374,7 @@ This repository includes `render.yaml` for one-click blueprint deployment of:
 3. Select this repository.
 4. Render will detect `render.yaml` and create both services.
 5. After first deploy, verify frontend env:
-   - `NEXT_PUBLIC_GIT_API_BASE=https://<your-backend-service>.onrender.com/git`
+  - `NEXT_PUBLIC_GIT_API_BASE=https://<your-backend-service>.onrender.com/git`
 
 Backend CORS supports localhost and `https://*.onrender.com` by default, and can be overridden with:
 
