@@ -92,13 +92,17 @@ export default function HomePage() {
     "Branch merged",
   );
 
-  const currentBranch = useMemo(
-    () => {
-      if (!branches?.length) return "Unknown";
-      return checkoutName || branches[0];
-    },
-    [branches, checkoutName],
-  );
+  const currentBranch = useMemo(() => {
+    if (!branches?.length) return "Unknown";
+
+    const branch = checkoutName || branches[0];
+
+    if (typeof branch === "string") {
+      return branch;
+    }
+
+    return branch?.name || "Unknown";
+  }, [branches, checkoutName]);
 
   const onAddFile = async (e: FormEvent) => {
     e.preventDefault();
@@ -223,7 +227,9 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-xs uppercase text-slate-500">Current Branch</p>
-                <p className="text-sm text-slate-100">{currentBranch}</p>
+                <p className="text-sm text-slate-100">
+                  {currentBranch}
+                </p>
               </div>
               <div>
                 <p className="text-xs uppercase text-slate-500">Recent Commits</p>
@@ -319,10 +325,13 @@ export default function HomePage() {
                 {branchError && <ErrorState message={branchError} />}
                 {!loadingBranches && !branchError && (
                   <div className="space-y-2">
-                    {branches?.map((branch) => (
-                      <div key={branch} className="rounded-md border border-slate-800 px-3 py-2 text-sm text-slate-300">
-                        {branch}
-                      </div>
+                    {branches?.map((branch, index) => (
+                        <div
+                            key={typeof branch === "string" ? branch : branch?.name || index}
+                            className="rounded-md border border-slate-800 px-3 py-2 text-sm text-slate-300"
+                        >
+                          {typeof branch === "string" ? branch : branch?.name}
+                        </div>
                     ))}
                   </div>
                 )}
